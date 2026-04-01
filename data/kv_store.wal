@@ -1,0 +1,6 @@
+SET|name|李文正
+SET|age|21
+DEL|age
+SET|age|李文正
+SET|age|李文正
+SET|age|李文正
