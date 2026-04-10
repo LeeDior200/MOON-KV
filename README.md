@@ -44,6 +44,8 @@ MOON-KV是一个基于Java的轻量级键值存储数据库，支持WAL持久化
 
 ### 📊 性能指标
 
+#### 基础指标
+
 | 指标 | 数值 | 说明 |
 |------|------|------|
 | 启动时间 | < 2秒 | 快速启动 |
@@ -52,6 +54,38 @@ MOON-KV是一个基于Java的轻量级键值存储数据库，支持WAL持久化
 | API响应时间 | < 100ms | 快速响应 |
 | 并发能力 | 100+ QPS | 良好的并发性能 |
 | 代码规模 | 3,867行 | 易于理解和维护 |
+
+#### 性能测试结果
+
+**测试环境**：
+- 测试时间：2026-04-11
+- 测试配置：5 个场景，每个场景 5 个测试方法
+- 预热轮次：5 轮 × 3 秒（推荐值，5轮以上JIT才能稳定）
+- 测试轮次：5 轮 × 3 秒
+- Fork 数：3（推荐值，避免受OS干扰）
+
+**测试场景**：
+1. **sync-lazy-lru**：SYNC刷盘 + LAZY过期 + LRU淘汰 - 数据安全优先
+2. **async-periodic-lfu**：ASYNC刷盘 + PERIODIC过期 + LFU淘汰 - 性能优先
+3. **batch-hybrid-lru**：BATCH刷盘 + HYBRID过期 + LRU淘汰 - 平衡模式
+4. **batch-lazy-fifo**：BATCH刷盘 + LAZY过期 + FIFO淘汰 - 高吞吐量
+5. **async-hybrid-lru**：ASYNC刷盘 + HYBRID过期 + LRU淘汰 - 推荐配置
+
+**性能数据摘要**：
+
+| 操作类型 | SYNC策略 | ASYNC/BATCH策略 | 性能差距 |
+|---------|---------|----------------|---------|
+| 写入 | 1,636 ops/s | 3,900-4,200 ops/s | 2-3倍 |
+| 读取 | 12,700 ops/s | 13,000-13,700 ops/s | 相同 |
+| 删除 | 不稳定 | 6,000-6,200 ops/s | - |
+| 混合读写 | 12,700 ops/s | 13,000-13,700 ops/s | 相同 |
+
+**推荐配置**：
+- 🥇 **最佳性能**：batch-lazy-fifo - 高吞吐量场景
+- 🥈 **平衡推荐**：async-hybrid-lru - 通用场景
+- 🥉 **数据安全**：sync-lazy-lru - 仅当数据安全极其重要时
+
+详细性能测试报告请查看 [moon-kv-test 模块](moon-kv-test/README.md)。
 
 ### 🚀 快速开始
 
@@ -343,6 +377,37 @@ mvn test
 mvn test -Dtest=KVStoreTest
 ```
 
+#### 运行性能测试
+
+```bash
+# 编译打包
+mvn clean package -DskipTests
+
+# 运行单个场景测试（约 5 分钟）
+java -jar moon-kv-test/target/moon-kv-test-1.0.0.jar ConfigurableKVStoreBenchmark -p scenarioName=async-hybrid-lru
+
+# 运行所有场景测试（约 25-30 分钟）
+java -jar moon-kv-test/target/moon-kv-test-1.0.0.jar ConfigurableKVStoreBenchmark
+
+# 列出所有可用场景
+java -cp moon-kv-test/target/moon-kv-test-1.0.0.jar com.saki.benchmark.ConfigurableBenchmarkRunner --list
+
+# 使用快速测试配置（约 1 分钟）
+java -cp moon-kv-test/target/moon-kv-test-1.0.0.jar com.saki.benchmark.ConfigurableBenchmarkRunner --config benchmark/quick-test.json
+```
+
+**测试参数说明**：
+- **预热轮次**：5 轮 × 3 秒（推荐值，5轮以上JIT才能稳定）
+- **测试轮次**：5 轮 × 3 秒
+- **Fork 数**：3（推荐值，避免受OS干扰）
+
+**测试场景**：
+- **sync-lazy-lru**：SYNC刷盘 + LAZY过期 + LRU淘汰
+- **async-periodic-lfu**：ASYNC刷盘 + PERIODIC过期 + LFU淘汰
+- **batch-hybrid-lru**：BATCH刷盘 + HYBRID过期 + LRU淘汰
+- **batch-lazy-fifo**：BATCH刷盘 + LAZY过期 + FIFO淘汰
+- **async-hybrid-lru**：ASYNC刷盘 + HYBRID过期 + LRU淘汰（推荐）
+
 #### 代码规范
 
 - 遵循Java命名规范
@@ -352,18 +417,58 @@ mvn test -Dtest=KVStoreTest
 
 ### 📈 性能优化建议
 
+#### 基于性能测试结果的优化建议
+
+1. **避免使用 SYNC 刷盘策略**（除非对数据安全有极高要求）
+   - 写入性能：1,636 ops/s（最差）
+   - 删除性能：不稳定
+   - 性能差距：比 ASYNC/BATCH 慢 2-3 倍
+
+2. **推荐使用 ASYNC 或 BATCH 策略**
+   - 写入性能：3,900-4,200 ops/s
+   - 读取性能：13,000-13,700 ops/s
+   - 删除性能：6,000-6,200 ops/s
+   - 平衡了性能和数据安全
+
+3. **读取性能不受刷盘策略影响**
+   - 所有场景读取性能相近（12,700-13,700 ops/s）
+   - 纯内存操作，性能优秀
+
+4. **删除性能优于写入性能**
+   - 删除操作更快
+   - ASYNC/BATCH 场景下可达 6,000+ ops/s
+
+#### 配置优化
+
 1. **内存配置**
    - 根据数据量合理设置 `memory.max.entries`
-   - 选择合适的淘汰策略
+   - 选择合适的淘汰策略（推荐 LRU）
 
 2. **WAL配置**
-   - 性能优先：使用ASYNC或BATCH策略
-   - 数据安全优先：使用SYNC策略
+   - 性能优先：使用 ASYNC 或 BATCH 策略
+   - 数据安全优先：使用 SYNC 策略（性能较差）
+   - 推荐配置：ASYNC 刷盘 + 100ms 刷盘间隔
 
 3. **TTL配置**
-   - 通用场景：使用HYBRID策略
-   - 读多写少：使用LAZY策略
-   - 写多读少：使用PERIODIC策略
+   - 通用场景：使用 HYBRID 策略（推荐）
+   - 读多写少：使用 LAZY 策略
+   - 写多读少：使用 PERIODIC 策略
+
+#### 监控指标
+
+建议监控以下指标：
+- 内存使用率
+- WAL 文件大小
+- 磁盘 I/O
+- GC 频率
+- API 响应时间
+
+#### 进一步测试
+
+建议进行以下测试：
+- 并发测试：测试多线程下的性能
+- 大数据量测试：测试内存淘汰的影响
+- 长时间稳定性测试：测试性能是否稳定
 
 ### 🤝 贡献指南
 

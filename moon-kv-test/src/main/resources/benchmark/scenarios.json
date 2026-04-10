@@ -1,0 +1,129 @@
+{
+  "scenarios": [
+    {
+      "name": "sync-lazy-lru",
+      "description": "SYNC刷盘 + LAZY过期 + LRU淘汰 - 数据安全优先",
+      "wal": {
+        "flushStrategy": "SYNC",
+        "flushIntervalMs": 1000
+      },
+      "expiry": {
+        "strategy": "LAZY",
+        "scanIntervalMs": 1000
+      },
+      "memory": {
+        "evictionStrategy": "LRU",
+        "maxSizeMB": 100,
+        "evictionRatio": 0.8
+      },
+      "benchmark": {
+        "warmupIterations": 3,
+        "warmupTime": 1,
+        "measurementIterations": 5,
+        "measurementTime": 3,
+        "forks": 1,
+        "threads": 1
+      }
+    },
+    {
+      "name": "async-periodic-lfu",
+      "description": "ASYNC刷盘 + PERIODIC过期 + LFU淘汰 - 性能优先",
+      "wal": {
+        "flushStrategy": "ASYNC",
+        "flushIntervalMs": 100
+      },
+      "expiry": {
+        "strategy": "PERIODIC",
+        "scanIntervalMs": 1000
+      },
+      "memory": {
+        "evictionStrategy": "LFU",
+        "maxSizeMB": 100,
+        "evictionRatio": 0.8
+      },
+      "benchmark": {
+        "warmupIterations": 3,
+        "warmupTime": 1,
+        "measurementIterations": 5,
+        "measurementTime": 3,
+        "forks": 1,
+        "threads": 1
+      }
+    },
+    {
+      "name": "batch-hybrid-lru",
+      "description": "BATCH刷盘 + HYBRID过期 + LRU淘汰 - 平衡模式",
+      "wal": {
+        "flushStrategy": "BATCH",
+        "batchSize": 100
+      },
+      "expiry": {
+        "strategy": "HYBRID",
+        "scanIntervalMs": 100
+      },
+      "memory": {
+        "evictionStrategy": "LRU",
+        "maxSizeMB": 100,
+        "evictionRatio": 0.8
+      },
+      "benchmark": {
+        "warmupIterations": 3,
+        "warmupTime": 1,
+        "measurementIterations": 5,
+        "measurementTime": 3,
+        "forks": 1,
+        "threads": 1
+      }
+    },
+    {
+      "name": "batch-lazy-fifo",
+      "description": "BATCH刷盘 + LAZY过期 + FIFO淘汰 - 高吞吐量",
+      "wal": {
+        "flushStrategy": "BATCH",
+        "batchSize": 1000
+      },
+      "expiry": {
+        "strategy": "LAZY",
+        "scanIntervalMs": 1000
+      },
+      "memory": {
+        "evictionStrategy": "FIFO",
+        "maxSizeMB": 100,
+        "evictionRatio": 0.8
+      },
+      "benchmark": {
+        "warmupIterations": 3,
+        "warmupTime": 1,
+        "measurementIterations": 5,
+        "measurementTime": 3,
+        "forks": 1,
+        "threads": 1
+      }
+    },
+    {
+      "name": "async-hybrid-lru",
+      "description": "ASYNC刷盘 + HYBRID过期 + LRU淘汰 - 推荐配置",
+      "wal": {
+        "flushStrategy": "ASYNC",
+        "flushIntervalMs": 100
+      },
+      "expiry": {
+        "strategy": "HYBRID",
+        "scanIntervalMs": 100
+      },
+      "memory": {
+        "evictionStrategy": "LRU",
+        "maxSizeMB": 100,
+        "evictionRatio": 0.8
+      },
+      "benchmark": {
+        "warmupIterations": 3,
+        "warmupTime": 1,
+        "measurementIterations": 5,
+        "measurementTime": 3,
+        "forks": 1,
+        "threads": 1
+      }
+    }
+  ]
+}

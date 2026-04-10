@@ -1,0 +1,29 @@
+{
+  "scenarios": [
+    {
+      "name": "quick-test",
+      "description": "快速测试 - 仅用于开发调试",
+      "wal": {
+        "flushStrategy": "ASYNC",
+        "flushIntervalMs": 100
+      },
+      "expiry": {
+        "strategy": "HYBRID",
+        "scanIntervalMs": 100
+      },
+      "memory": {
+        "evictionStrategy": "LRU",
+        "maxSizeMB": 100,
+        "evictionRatio": 0.8
+      },
+      "benchmark": {
+        "warmupIterations": 1,
+        "warmupTime": 1,
+        "measurementIterations": 1,
+        "measurementTime": 1,
+        "forks": 1,
+        "threads": 1
+      }
+    }
+  ]
+}

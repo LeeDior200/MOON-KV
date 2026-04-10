@@ -68,7 +68,15 @@ public class Wal implements AutoCloseable {
                 if (parts.length < 2) {
                     continue;
                 }
-                handler.handle(parts[0], parts[1], parts.length >= 3 ? parts[2] : null);
+                String value = null;
+                if (parts.length >= 3) {
+                    StringBuilder valueBuilder = new StringBuilder(parts[2]);
+                    for (int i = 3; i < parts.length; i++) {
+                        valueBuilder.append("|").append(parts[i]);
+                    }
+                    value = valueBuilder.toString();
+                }
+                handler.handle(parts[0], parts[1], value);
                 count++;
             }
             logger.info("WAL replay completed, {} records processed", count);
