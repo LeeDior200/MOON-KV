@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOON-KV Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🌙 MOON-KV Dashboard</h1>
+            <div class="header-info">
+                <span id="version">Version: 1.0.0</span>
+                <span id="uptime">Uptime: --</span>
+            </div>
+        </header>
+
+        <nav class="nav">
+            <a href="/" class="nav-link active">Dashboard</a>
+            <a href="/data.html" class="nav-link">Data Management</a>
+            <a href="/monitor.html" class="nav-link">Monitor</a>
+            <a href="/config.html" class="nav-link">Config</a>
+        </nav>
+
+        <main class="main">
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <h3>Key Count</h3>
+                        <p class="stat-value" id="keyCount">--</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💾</div>
+                    <div class="stat-content">
+                        <h3>Memory Usage</h3>
+                        <p class="stat-value" id="memoryUsage">--</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-content">
+                        <h3>JVM Memory</h3>
+                        <p class="stat-value" id="jvmMemory">--</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-content">
+                        <h3>Eviction Strategy</h3>
+                        <p class="stat-value" id="evictionStrategy">--</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="action-panel">
+                    <div class="action-form">
+                        <h3>Set Key-Value</h3>
+                        <input type="text" id="setKey" placeholder="Key" class="input">
+                        <input type="text" id="setValue" placeholder="Value" class="input">
+                        <input type="number" id="setTtl" placeholder="TTL (seconds, optional)" class="input">
+                        <button onclick="setKeyValue()" class="btn btn-primary">Set</button>
+                    </div>
+
+                    <div class="action-form">
+                        <h3>Get Key-Value</h3>
+                        <input type="text" id="getKey" placeholder="Key" class="input">
+                        <button onclick="getKeyValue()" class="btn btn-secondary">Get</button>
+                        <div id="getResult" class="result-box"></div>
+                    </div>
+
+                    <div class="action-form">
+                        <h3>Delete Key</h3>
+                        <input type="text" id="deleteKey" placeholder="Key" class="input">
+                        <button onclick="deleteKey()" class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="health-status">
+                <h2>System Health</h2>
+                <div id="healthStatus" class="health-grid">
+                    Loading...
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>MOON-KV &copy; 2024 - Lightweight KV Database with WAL and TTL Support</p>
+        </footer>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

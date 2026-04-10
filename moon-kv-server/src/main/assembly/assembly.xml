@@ -1,0 +1,58 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+    <id>dist</id>
+    <formats>
+        <format>tar.gz</format>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>lib</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+            <excludes>
+                <exclude>original-*.jar</exclude>
+            </excludes>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/scripts</directory>
+            <outputDirectory>bin</outputDirectory>
+            <fileMode>0755</fileMode>
+            <includes>
+                <include>*.sh</include>
+                <include>*.bat</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/config</directory>
+            <outputDirectory>config</outputDirectory>
+            <includes>
+                <include>*.properties</include>
+                <include>*.xml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>${project.basedir}/..</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>README.md</include>
+                <include>LICENSE</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+
+    <files>
+        <file>
+            <source>src/main/config/README.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+    </files>
+</assembly>

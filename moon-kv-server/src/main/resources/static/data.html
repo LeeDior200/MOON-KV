@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOON-KV - Data Management</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🌙 MOON-KV Dashboard</h1>
+            <div class="header-info">
+                <span id="version">Version: 1.0.0</span>
+                <span id="uptime">Uptime: --</span>
+            </div>
+        </header>
+
+        <nav class="nav">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/data.html" class="nav-link active">Data Management</a>
+            <a href="/monitor.html" class="nav-link">Monitor</a>
+            <a href="/config.html" class="nav-link">Config</a>
+        </nav>
+
+        <main class="main">
+            <section class="data-management">
+                <h2>Data Management</h2>
+                
+                <div class="action-panel">
+                    <div class="action-form">
+                        <h3>Add New Key-Value</h3>
+                        <input type="text" id="newKey" placeholder="Key" class="input">
+                        <input type="text" id="newValue" placeholder="Value" class="input">
+                        <input type="number" id="newTtl" placeholder="TTL (seconds, optional)" class="input">
+                        <button onclick="addKeyValue()" class="btn btn-primary">Add</button>
+                    </div>
+
+                    <div class="action-form">
+                        <h3>Search Key</h3>
+                        <input type="text" id="searchKey" placeholder="Search key..." class="input">
+                        <button onclick="searchKey()" class="btn btn-secondary">Search</button>
+                        <div id="searchResult" class="result-box"></div>
+                    </div>
+                </div>
+
+                <div class="data-table-section">
+                    <h3>Key-Value List</h3>
+                    <div class="table-controls">
+                        <button onclick="loadAllKeys()" class="btn btn-secondary">Refresh</button>
+                    </div>
+                    <table class="data-table" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <tr>
+                                <td colspan="3" class="loading">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>MOON-KV &copy; 2024 - Lightweight KV Database with WAL and TTL Support</p>
+        </footer>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        async function loadAllKeys() {
+            try {
+                const response = await api.getAllKeys();
+                const tbody = document.getElementById('dataTableBody');
+                
+                if (response.code === 200) {
+                    const keys = response.data.keys || [];
+                    
+                    if (keys.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" class="loading">No data available</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = '';
+                    
+                    for (const key of keys) {
+                        const getResponse = await api.get(key);
+                        const value = getResponse.code === 200 ? getResponse.data.value : 'N/A';
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${escapeHtml(key)}</td>
+                            <td>${escapeHtml(value)}</td>
+                            <td>
+                                <button onclick="editKey('${escapeHtml(key)}')" class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">Edit</button>
+                                <button onclick="deleteKeyConfirm('${escapeHtml(key)}')" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3" class="error">Failed to load data</td></tr>';
+                }
+            } catch (error) {
+                console.error('Failed to load keys:', error);
+                document.getElementById('dataTableBody').innerHTML = '<tr><td colspan="3" class="error">Error loading data</td></tr>';
+            }
+        }
+
+        async function addKeyValue() {
+            const key = document.getElementById('newKey').value.trim();
+            const value = document.getElementById('newValue').value.trim();
+            const ttl = document.getElementById('newTtl').value;
+
+            if (!key || !value) {
+                alert('Key and value are required');
+                return;
+            }
+
+            try {
+                const response = await api.set(key, value, ttl ? parseInt(ttl) : null);
+                
+                if (response.code === 200) {
+                    alert('Key added successfully');
+                    document.getElementById('newKey').value = '';
+                    document.getElementById('newValue').value = '';
+                    document.getElementById('newTtl').value = '';
+                    loadAllKeys();
+                } else {
+                    alert('Failed to add key: ' + response.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function searchKey() {
+            const key = document.getElementById('searchKey').value.trim();
+            const resultDiv = document.getElementById('searchResult');
+
+            if (!key) {
+                resultDiv.textContent = 'Please enter a key to search';
+                return;
+            }
+
+            try {
+                const response = await api.get(key);
+                
+                if (response.code === 200) {
+                    resultDiv.innerHTML = `<strong>Key:</strong> ${escapeHtml(response.data.key)}<br><strong>Value:</strong> ${escapeHtml(response.data.value)}`;
+                } else if (response.code === 404) {
+                    resultDiv.textContent = 'Key not found';
+                } else {
+                    resultDiv.textContent = 'Error: ' + response.message;
+                }
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        function editKey(key) {
+            const newValue = prompt('Enter new value for key: ' + key);
+            if (newValue !== null) {
+                updateKey(key, newValue);
+            }
+        }
+
+        async function updateKey(key, value) {
+            try {
+                const response = await api.set(key, value);
+                
+                if (response.code === 200) {
+                    alert('Key updated successfully');
+                    loadAllKeys();
+                } else {
+                    alert('Failed to update key: ' + response.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function deleteKeyConfirm(key) {
+            if (confirm('Are you sure you want to delete key: ' + key + '?')) {
+                deleteKeyAction(key);
+            }
+        }
+
+        async function deleteKeyAction(key) {
+            try {
+                const response = await api.delete(key);
+                
+                if (response.code === 200) {
+                    alert('Key deleted successfully');
+                    loadAllKeys();
+                } else {
+                    alert('Failed to delete key: ' + response.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllKeys();
+        });
+    </script>
+
+    <style>
+        .data-management {
+            margin-bottom: 30px;
+        }
+
+        .data-table-section {
+            margin-top: 30px;
+        }
+
+        .data-table-section h3 {
+            margin-bottom: 15px;
+        }
+
+        .table-controls {
+            margin-bottom: 15px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .data-table td:last-child {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</body>
+</html>

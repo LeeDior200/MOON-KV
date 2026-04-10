@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOON-KV - Configuration</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🌙 MOON-KV Dashboard</h1>
+            <div class="header-info">
+                <span id="version">Version: 1.0.0</span>
+                <span id="uptime">Uptime: --</span>
+            </div>
+        </header>
+
+        <nav class="nav">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/data.html" class="nav-link">Data Management</a>
+            <a href="/monitor.html" class="nav-link">Monitor</a>
+            <a href="/config.html" class="nav-link active">Config</a>
+        </nav>
+
+        <main class="main">
+            <section class="config-section">
+                <h2>Configuration</h2>
+
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3>Server Configuration</h3>
+                        <div id="serverConfig" class="config-content">
+                            Loading...
+                        </div>
+                    </div>
+
+                    <div class="config-card">
+                        <h3>WAL Configuration</h3>
+                        <div id="walConfig" class="config-content">
+                            Loading...
+                        </div>
+                    </div>
+
+                    <div class="config-card">
+                        <h3>Expiry Configuration</h3>
+                        <div id="expiryConfig" class="config-content">
+                            Loading...
+                        </div>
+                    </div>
+
+                    <div class="config-card">
+                        <h3>Memory Configuration</h3>
+                        <div id="memoryConfig" class="config-content">
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-info">
+                    <h3>Configuration Information</h3>
+                    <p><strong>Note:</strong> Configuration changes are not supported in this version. Configuration is read-only.</p>
+                    <p>To modify configuration, edit the <code>server.properties</code> file and restart the server.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>MOON-KV &copy; 2024 - Lightweight KV Database with WAL and TTL Support</p>
+        </footer>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        async function loadConfig() {
+            try {
+                const response = await api.getConfig();
+
+                if (response.code === 200) {
+                    const config = response.data;
+
+                    displayServerConfig(config.server);
+                    displayWalConfig(config.wal);
+                    displayExpiryConfig(config.expiry);
+                    displayMemoryConfig(config.memory);
+
+                    if (config.server) {
+                        document.getElementById('version').textContent = 'Version: 1.0.0';
+                    }
+                } else {
+                    showError('Failed to load configuration');
+                }
+            } catch (error) {
+                console.error('Failed to load config:', error);
+                showError('Error loading configuration');
+            }
+        }
+
+        function displayServerConfig(config) {
+            const div = document.getElementById('serverConfig');
+            if (config) {
+                div.innerHTML = `
+                    <div class="config-row">
+                        <label>Port:</label>
+                        <span>${config.port || 8080}</span>
+                    </div>
+                    <div class="config-row">
+                        <label>Host:</label>
+                        <span>${config.host || '0.0.0.0'}</span>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = '<p class="error">Configuration not available</p>';
+            }
+        }
+
+        function displayWalConfig(config) {
+            const div = document.getElementById('walConfig');
+            if (config) {
+                div.innerHTML = `
+                    <div class="config-row">
+                        <label>WAL Path:</label>
+                        <span>${config.path || './data/kv_store.wal'}</span>
+                    </div>
+                    <div class="config-row">
+                        <label>Flush Strategy:</label>
+                        <span>${config.flushStrategy || 'ASYNC'}</span>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = '<p class="error">Configuration not available</p>';
+            }
+        }
+
+        function displayExpiryConfig(config) {
+            const div = document.getElementById('expiryConfig');
+            if (config) {
+                div.innerHTML = `
+                    <div class="config-row">
+                        <label>Strategy:</label>
+                        <span>${config.strategy || 'HYBRID'}</span>
+                    </div>
+                    <div class="config-row">
+                        <label>Check Interval:</label>
+                        <span>${config.checkInterval || 60000} ms</span>
+                    </div>
+                    <div class="config-row">
+                        <label>Lazy Enabled:</label>
+                        <span>${config.lazyEnabled ? 'Yes' : 'No'}</span>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = '<p class="error">Configuration not available</p>';
+            }
+        }
+
+        function displayMemoryConfig(config) {
+            const div = document.getElementById('memoryConfig');
+            if (config) {
+                div.innerHTML = `
+                    <div class="config-row">
+                        <label>Max Entries:</label>
+                        <span>${config.maxEntries || 10000}</span>
+                    </div>
+                    <div class="config-row">
+                        <label>Eviction Strategy:</label>
+                        <span>${config.evictionStrategy || 'LRU'}</span>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = '<p class="error">Configuration not available</p>';
+            }
+        }
+
+        function showError(message) {
+            const configs = ['serverConfig', 'walConfig', 'expiryConfig', 'memoryConfig'];
+            configs.forEach(id => {
+                document.getElementById(id).innerHTML = `<p class="error">${message}</p>`;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfig();
+        });
+    </script>
+
+    <style>
+        .config-section {
+            margin-bottom: 30px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .config-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .config-card h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .config-content {
+            min-height: 80px;
+        }
+
+        .config-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .config-row:last-child {
+            border-bottom: none;
+        }
+
+        .config-row label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .config-row span {
+            font-weight: 600;
+            color: #333;
+            font-family: monospace;
+        }
+
+        .config-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .config-info h3 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        .config-info p {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        .config-info code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 768px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>
