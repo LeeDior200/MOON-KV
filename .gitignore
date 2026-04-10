@@ -1,4 +1,108 @@
-# 项目排除路径
-/Key-Value/target/
-/data/
-/.idea/
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# IDE - Eclipse
+.settings/
+.classpath
+.project
+.metadata/
+bin/
+tmp/
+
+# IDE - NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# IDE - VS Code
+.vscode/
+*.code-workspace
+
+# IDE - TRAE
+.trae/
+# TEST
+moon-kv-core/src/test
+# Logs
+logs/
+*.log
+*.log.*
+
+# Data Files
+data/
+*.wal
+*.wal.*
+
+# Application Files
+*.pid
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+# Compiled class files
+*.class
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Temporary Files
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# Spring Boot
+.springBeans
+
+# Config Override (keep templates)
+# config/application-local.properties
+# config/application-dev.properties
+
+# Documentation
+# Keep README.md and LICENSE
+# Ignore other generated docs if any
+
+# Build Output
+dependency-reduced-pom.xml
+
+# Test Output
+test-output/
