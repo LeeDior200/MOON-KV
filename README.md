@@ -20,7 +20,6 @@
 
 MOON-KV是一个基于Java的轻量级键值存储数据库，支持WAL持久化、TTL过期机制和内存管理。项目采用模块化架构设计，提供完整的HTTP REST API和Web管理界面，适合中小型应用、嵌入式场景和学习研究。
 
-**轻量化评分**: ⭐⭐⭐⭐⭐ (9.2/10)
 
 ### ✨ 核心特性
 
@@ -510,7 +509,6 @@ java -cp moon-kv-test/target/moon-kv-test-1.0.0.jar com.saki.benchmark.Configura
 
 MOON-KV is a lightweight key-value storage database based on Java, supporting WAL persistence, TTL expiration mechanism, and memory management. The project adopts a modular architecture design, providing complete HTTP REST API and Web management interface, suitable for small and medium-sized applications, embedded scenarios, and learning research.
 
-**Lightweight Score**: ⭐⭐⭐⭐⭐ (9.2/10)
 
 ### ✨ Key Features
 
